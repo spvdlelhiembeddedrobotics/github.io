@@ -1,0 +1,58 @@
+# Micron Chip Camp
+
+Teaching tools for the CHIP Camp at SPV Delhi (13 and 14 October), run with Lend A Hand India. Students build one of three robots: Chip Bot, Peeko or Jarvis. Open `index.html` in Chrome or Edge. Nothing to install.
+
+## Pages
+
+Every robot follows the same steps, shown in a step bar on each page.
+
+| Step | Page | What it does |
+|---|---|---|
+| Start | `index.html` | Welcome screen. Pick a robot, then see only that robot's tools. |
+| Practice | `logic.html` | The CHIP Challenge. 10 levels on sequences, loops, if and else, and debugging, with a skin for each robot. |
+| 1. Wire it | `circuits.html` | Circuit Lab. Drag the kit parts together, plug servos into the shield, wire sensors and the 2-leg buzzer, and get a checklist that says what is wrong. |
+| 2. Test it | `test.html` | A test sketch for each robot checks every part after the wiring is done, and a checklist says what to see and hear. |
+| 3. Design it | `studio.html` | Face Studio (Peeko), Dance Studio (Chip Bot), Light Studio (Jarvis). Optional. |
+| 4. Build it, 5. Make the code, 6. Pro code | `blocks.html` | Code Builder. Starters, blocks, a preview of the robot, the full Arduino sketch (Copy or Download) and the Pro code. The Pro code is locked until a facilitator unlocks it. |
+| Day 2 | `brain.html` | Peeko's Brain. Load a Teachable Machine model and Peeko reacts to the camera. Needs the internet and Chrome or Edge. |
+| Team | `plans.html`, `slides.html` | Facilitator area and presentations, behind a password. |
+
+## Boards
+
+Every robot runs from the laptop's USB cable. No batteries.
+
+- Chip Bot: Arduino Nano on an IO sensor shield. Servos on D2 to D5, HC-SR04 on D8 and D9, buzzer on D13. Board in the IDE: Nano. If the upload fails, Processor: ATmega328P (Old Bootloader).
+- Peeko: Arduino Uno. OLED on A4 and A5, head servo on D9, buzzer on D8.
+- Jarvis: Arduino Uno and a breadboard. Soil on A0, LDR on A1, RGB LED on D9, D10 and D11, buzzer on D8.
+
+## How the generated code works
+
+The Code Builder does not write sketches from scratch. Each robot has a base sketch in `firmware/` and the builder only fills in the marked student parts: names, times, thresholds, faces, notes. Every value is bounded (numbers clamped, text limited to letters and digits, choices from fixed lists).
+
+- Peeko is built on the sketch that was bench-tested on the real robot. The only change is that the serial reading loop moved into `pollSerial()`.
+- Chip Bot uses the Otto walk, turn and dance code from `chipbot/firmware/chipbot/chipbot.ino` as it is.
+- Jarvis is new and has not been tested on the bench yet. The soil and light numbers are set in the bench settings of the Code Builder.
+
+`bench-test/` has one finished example sketch per robot to try on real hardware before the camp. `firmware/test/` has the three test sketches, and the Pro sketches are kept in the private `session-plan/pro/` folder.
+
+## Tests
+
+`node tests/run_all.js` runs everything. The sketch compile needs the Arduino IDE app and the sketch libraries on the machine. On another machine run it with `--no-compile`.
+
+- `run_tests.js`: generated sketches for every robot, including hostile input, compiled for the right board.
+- `logic_tests.js`: every CHIP Challenge level is solvable within its block limit.
+- `lab_tests.js`: the Circuit Lab checker accepts the finished circuit and catches broken ones.
+- `studio_tests.js`: every Studio design turns into valid blocks and a sketch that compiles.
+- `brain_tests.js`: when Peeko's Brain sends a command and when it doesn't.
+- `testsketch_tests.js`: the three test sketches compile for their real boards.
+- `pro_tests.js`: the Pro sketches (private) build from the base code and compile.
+
+Not tested yet: any of this on real boards, servos, the OLED or sensors, on a touch screen, or with a real webcam and Teachable Machine model.
+
+## Rebuilding
+
+`node build.js` bundles `src/` and `firmware/` into the HTML files. The logos in `assets/` are cut from the sticker artwork.
+
+The session plan lives in `session-plan/`, which is not in this repo. `build.js` encrypts it into `plans.html`. The password comes from the `PLANS_PIN` environment variable or a local `.plans-pin` file.
+
+The presentation decks and their PowerPoint files are also built from the private `session-plan/` folder: `python3 tools/render_art.py` (character pictures, uses Chrome), `python3 tools/make_pptx.py` (and `python3 tools/check_pptx.py` to check the files), then `node build.js`.
